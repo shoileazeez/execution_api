@@ -1,0 +1,11 @@
+FROM python:3.9-slim-buster
+
+WORKDIR /app
+
+COPY python_requirements.txt .
+RUN pip install --no-cache-dir -r python_requirements.txt
+
+# No COPY user_code.py here! It's created at runtime.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+CMD ["python"] # Just start the python interpreter
