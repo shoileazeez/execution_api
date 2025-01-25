@@ -29,4 +29,4 @@ USER celeryuser
 EXPOSE 8000
 
 # CMD to apply migrations, collect static files, and start both Django and Celery
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && celery -A execute worker --loglevel=info & gunicorn execute.wsgi:application --bind 0.0.0.0:$PORT"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && celery -A execute.celery_app  worker --loglevel=info & gunicorn execute.wsgi:application --bind 0.0.0.0:$PORT"]
