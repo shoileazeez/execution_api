@@ -3,10 +3,10 @@ import shutil
 import uuid
 
 import docker
-from celery import shared_task
+from celery_app import app
 
 
-@shared_task(
+@app.task(
     bind=True, autoretry_for=(docker.errors.APIError,), retry_kwargs={"max_retries": 3}
 )
 def execute_code_task(self, language, code, input_data=""):
