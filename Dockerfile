@@ -7,18 +7,25 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 # Install dependencies
-COPY celery_requirements.txt .
-RUN pip install --no-cache-dir -r celery_requirements.txt
+COPY requirements.txt .
 
-# Copy the entire project into the container
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire Django project into the container
 COPY . .
 
 # Create a non-root user and set it as the owner of the working directory
-RUN adduser --disabled-password --gecos '' celeryuser && \
-    chown -R celeryuser:celeryuser /app
+
+
+RUN adduser --disabled-password --gecos '' celeryuser \
+    && chown -R celeryuser:celeryuser /app
 
 # Switch to the celeryuser to avoid running as root
 USER celeryuser
 
 # Command to run Celery worker
-CMD ["celery", "-A", "celery", "worker", "--loglevel=info", "--uid=celeryuser"]
+EXPOSE 8000
+
+# CMD to apply migrations, collect static files, and start both Django and Celery
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && celery -A execute worker --loglevel=info & gunicorn execute.wsgi:application --bind 0.0.0.0:$PORT"]
