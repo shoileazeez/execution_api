@@ -14,3 +14,7 @@ class CodeExecutionSerializer(serializers.Serializer):
                 "Code cannot be empty or contain only whitespace."
             )
         return data
+    def validate_code(self, value):
+        if len(value) > 1000:  # Example length limit
+            raise serializers.ValidationError("Code is too long.")
+        return value

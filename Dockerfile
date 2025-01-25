@@ -13,6 +13,26 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    libpq-dev \
+    build-essential \
+    libffi-dev \
+    zlib1g-dev \
+    curl \
+    gnupg
+
+# Install Node.js and npm (for vm2)
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
+
+# Install Python dependencies (requirements.txt)
+
+
+# Install Node.js dependencies (package.json)
+COPY package.json .
+RUN npm install
+
 # Copy the entire Django project into the container
 COPY . .
 

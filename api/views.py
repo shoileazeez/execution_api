@@ -3,11 +3,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import HttpResponse
-
+from rest_framework.throttling import UserRateThrottle
 from .serializers import CodeExecutionSerializer
 from .tasks import execute_code_task
 
-
+throttle_classes = [UserRateThrottle]
 @api_view(["POST"])
 def execute_code(request):
     serializer = CodeExecutionSerializer(data=request.data)
@@ -25,15 +25,12 @@ def execute_code(request):
 @api_view(["GET"])
 def get_task_result(request, task_id):
     task = AsyncResult(task_id)
-    if task.ready():
-        result = task.get()
-        return Response(result, status=status.HTTP_200_OK)
-    elif task.failed():
-        return Response(
-            {"status": "FAILURE"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    else:
-        return Response({"status": "PENDING"}, status=status.HTTP_202_ACCEPTED)
+    result = {
+            "task_id": task_id,
+            "task_status": task.status,
+            "task_result": task.result
+        }
+    return Response(result, status=status.HTTP_200_OK)
 
 
 from django.http import HttpResponse
