@@ -1,9 +1,9 @@
 import json
 import subprocess
 import os
-from restrictedpython import compile_restricted, safe_globals
-from vm2 import VM
-
+from django.http import JsonResponse  # Add this line
+from RestrictedPython  import compile_restricted, safe_globals
+from django.conf import settings 
 from celery_app import app  # Assuming your Celery app is in celery_app.py
 
 @app.task
@@ -55,9 +55,26 @@ def execute_code_task(code, language, input_data=""):
 
         elif language == "javascript":
             try:
-                vm = VM(timeout=5, eval_timeout=5)
-                result = vm.run(code, input_data=input_data)
-                return {"output": str(result)}, 200
+                executor_path = os.path.join(settings.BASE_DIR, 'utils', 'executor.js') # Path to executor.js
+                result = subprocess.run(['node', executor_path, code, input_data], capture_output=True, text=True, timeout=10) # Add timeout
+
+                if result.returncode == 0:
+                    try:
+                        output = json.loads(result.stdout)  # Parse JSON output
+                        return JsonResponse(output)  # Return JSON response
+                    except json.JSONDecodeError as e:
+                        return JsonResponse({"error": f"Invalid JSON from executor: {e}"}, status=500)
+                else:
+                    try:
+                        error_data = json.loads(result.stderr)  # Parse JSON error
+                        return JsonResponse(error_data, status=500)  # Return error with status
+                    except json.JSONDecodeError as e:
+                        return JsonResponse({"error": f"Invalid JSON error from executor: {e}"}, status=500)
+
+            except subprocess.TimeoutError:
+                return {"error": "JavaScript execution timed out"}, 500
+            except FileNotFoundError:
+                return {"error": f"Executor not found at {executor_path}"}, 500  # Handle file not found
             except Exception as e:
                 return {"error": str(e)}, 500
 
