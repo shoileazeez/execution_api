@@ -31,7 +31,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 redis==5.2.1
 requests==2.32.3
-restrictedpython==7.0
+restrictedpython==6.0b1
 six==1.17.0
 sqlparse==0.5.3
 tzdata==2025.1
