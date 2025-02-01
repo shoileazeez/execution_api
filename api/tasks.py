@@ -7,76 +7,68 @@ from celery_app import app
 
 @app.task
 def execute_code_task(code, language, input_data=""):
+    # Validate language support
+    if language not in ("python", "javascript"):
+        return {"error": "Unsupported language", "status": 400}
+        
     try:
-        if language not in ("python", "javascript"):
-            return {"error": "Unsupported language", "status": 400}
-
+        # Python execution
         if language == "python":
-            try:
-                byte_code = compile_restricted(code, '<string>', 'exec')
-                restricted_globals = safe_globals.copy()
-                restricted_globals['__builtins__'] = {
-                    'print': print,
-                    'range': range,
-                    'len': len,
-                    'int': int,
-                    'float': float,
-                    'str': str,
-                    'list': list,
-                    'dict': dict,
-                    'tuple': tuple,
-                    'set': set,
-                    'abs': abs,
-                    'sum': sum,
-                    'min': min,
-                    'max': max,
-                    'bool': bool,
-                    'enumerate': enumerate,
-                    'zip': zip,
-                    'map': map,
-                    'filter': filter,
-                    'sorted': sorted,
-                    'any': any,
-                    'all': all,
-                    'input': lambda: input_data
-                }
-                
-                exec(byte_code, restricted_globals)
-                output = restricted_globals.get('__result__', None)
-                if output is None:
-                    output = "No output produced (did you use print or return a value?)"
-                
-                return {"output": str(output), "status": 200}
-            except Exception as e:
-                return {"error": str(e), "status": 500}
+            byte_code = compile_restricted(code, '<string>', 'exec')
+            restricted_globals = safe_globals.copy()
+            restricted_globals['__builtins__'] = {
+                'print': print,
+                'range': range,
+                'len': len,
+                'int': int,
+                'float': float,
+                'str': str,
+                'list': list,
+                'dict': dict,
+                'tuple': tuple,
+                'set': set,
+                'abs': abs,
+                'sum': sum,
+                'min': min,
+                'max': max,
+                'bool': bool,
+                'enumerate': enumerate,
+                'zip': zip,
+                'map': map,
+                'filter': filter,
+                'sorted': sorted,
+                'any': any,
+                'all': all,
+                'input': lambda: input_data
+            }
+            
+            exec(byte_code, restricted_globals)
+            output = restricted_globals.get('__result__', None)
+            if output is None:
+                output = "No output produced (did you use print or return a value?)"
+            
+            return {"output": str(output), "status": 200}
+            
+        # JavaScript execution    
+        executor_path = os.path.join(settings.BASE_DIR, 'utils', 'executor.js')
+        result = subprocess.run(
+            ['node', executor_path, code, input_data],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
 
-        elif language == "javascript":
-            try:
-                executor_path = os.path.join(settings.BASE_DIR, 'utils', 'executor.js')
-                result = subprocess.run(
-                    ['node', executor_path, code, input_data],
-                    capture_output=True,
-                    text=True,
-                    timeout=10
-                )
-
-                if result.returncode == 0:
-                    try:
-                        return json.loads(result.stdout)
-                    except json.JSONDecodeError as e:
-                        return {"error": f"Invalid JSON from executor: {e}", "status": 500}
-                else:
-                    try:
-                        return json.loads(result.stderr)
-                    except json.JSONDecodeError as e:
-                        return {"error": f"Invalid JSON error from executor: {e}", "status": 500}
-
-            except subprocess.TimeoutError:
-                return {"error": "JavaScript execution timed out", "status": 500}
-            except FileNotFoundError:
-                return {"error": f"Executor not found at {executor_path}", "status": 500}
-            except Exception as e:
-                return {"error": str(e), "status": 500}
-
+        if result.returncode == 0:
+            output_data = json.loads(result.stdout)
+            return {"output": output_data, "status": 200}
+        else:
+            return {"error": result.stderr, "status": 500}
+            
+    except subprocess.TimeoutError:
+        return {"error": "Code execution timed out", "status": 500}
+    except FileNotFoundError:
+        return {"error": f"Executor not found at {executor_path}", "status": 500}
+    except json.JSONDecodeError:
+        return {"error": "Invalid output format", "status": 500}
     except Exception as e:
         return {"error": str(e), "status": 500}
