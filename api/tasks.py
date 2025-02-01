@@ -8,8 +8,6 @@ from celery_app import app
 @app.task
 def execute_code_task(code, language, input_data=""):
     # Validate language support
-    if language not in ("python", "javascript"):
-        return {"error": "Unsupported language", "status": 400}
         
     try:
         # Python execution
