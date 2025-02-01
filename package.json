@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Dependencies for JavaScript code execution",
   "dependencies": {
-    "isolated-vm": "^4.4.0"
+    "isolated-vm": "^4.7.2"
   }
 }
