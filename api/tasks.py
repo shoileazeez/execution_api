@@ -39,9 +39,6 @@ def execute_code_task(code, language, input_data=""):
                 output_data = json.loads(result.stdout)
                 return {"output": output_data, "status": 200}
             return {"output": {"error": result.stderr}, "status": 500}
-        
-        else:
-            return {"output": {"error": "Unsupported language"}, "status": 400}
             
     except Exception as e:
         return {"output": {"error": str(e)}, "status": 500}
