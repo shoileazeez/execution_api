@@ -81,9 +81,11 @@ class ExecuteCodeView(APIView):
 
             # Constructing the code dynamically
             if input_data:
-                result_statement = f"result = {function_name}(**input_data)"
+                # If input_data is provided, use it
+                result_statement = f"input_data = {input_data}\nresult = {function_name}(**input_data)"
             else:
-                result_statement = f"result = {function_name}()"
+                # Otherwise, assume the user's code contains the function call
+                result_statement = ""
             
             # Construct the dynamic code to be executed
             test_code = f"""
