@@ -118,7 +118,7 @@ print(result)
             ["python3", "sandbox_code.py"],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=30
             )
 
             if process.returncode != 0:
