@@ -3,6 +3,7 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get update && apt-get install -y python3-distutils
 # Set working directory
 WORKDIR /app
 
