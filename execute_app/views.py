@@ -100,18 +100,6 @@ print(result)
                 f.write(test_code)
                 
                 
-            install_process = subprocess.run(
-            ["python3", "-m", "pip", "install", "pandas", "numpy"],
-            capture_output=True,
-            text=True,
-            timeout=5
-            )
-
-# Check for errors during installation
-            if install_process.returncode != 0:
-                print(f"Error installing dependencies: {install_process.stderr}")
-            else:
-                print("Dependencies installed successfully.")
 
             # Execute the code in a sandboxed environment
             process = subprocess.run(
