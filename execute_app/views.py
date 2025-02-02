@@ -87,11 +87,15 @@ print(result)
 
             # Execute the code in a sandboxed environment
             process = subprocess.run(
-                ["python3", "sandbox_code.py"],
-                capture_output=True,
-                text=True,
-                timeout=5
+            ["python3", "sandbox_code.py"],
+            capture_output=True,
+            text=True,
+            timeout=5
             )
+
+            if process.returncode != 0:
+                error = process.stderr.strip()
+                return Response({"status": "error", "message": f"Code execution failed: {error}"})
             
             # Retrieve and process output
             output = process.stdout.strip()
