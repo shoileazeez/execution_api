@@ -3,7 +3,6 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get install -y python3-distutils
 # Set working directory
 WORKDIR /app
 
@@ -12,6 +11,19 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install system dependencies (if needed for your Python packages)
+RUN apt-get update && apt-get install -y \
+    python3-distutils \
+    python3-dev \
+    libpq-dev \
+    build-essential \
+    libffi-dev \
+    zlib1g-dev \
+    curl \
+    gnupg
+
+
 
 # Copy the rest of your Django project (AFTER installing npm dependencies)
 COPY . .
