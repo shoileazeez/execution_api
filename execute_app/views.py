@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CodeExecutionSerializer
-
+from RestrictedPython import compile_restricted, safe_globals, utility_builtins
 class ExecuteCodeView(APIView):
     def post(self, request):
         serializer = CodeExecutionSerializer(data=request.data)
@@ -18,8 +18,17 @@ class ExecuteCodeView(APIView):
 
                 try:
                     # Execute the user's code dynamically
+                    exec_globals = {
+                        "__builtins__": utility_builtins,  # Restrict built-in functions
+                        "input_data": input_data,          # Pass input data
+                    }
                     exec_locals = {}
-                    exec(code, {}, {"input_data": input_data, **exec_locals})
+
+                    # Compile the user's code securely
+                    compiled_code = compile_restricted(code, "<string>", "exec")
+
+                    # Execute the compiled code
+                    exec(compiled_code, exec_globals, exec_locals)
                     
                     # Fetch the result from the user's code
                     user_output = exec_locals.get("result")  # Assume user stores result in a variable named "result"
