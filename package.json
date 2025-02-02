@@ -1,8 +1,0 @@
-{
-  "name": "code-executor-js",
-  "version": "1.0.0",
-  "description": "Dependencies for JavaScript code execution",
-  "dependencies": {
-    "isolated-vm": "^4.7.2"
-  }
-}
