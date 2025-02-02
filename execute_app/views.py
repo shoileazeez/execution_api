@@ -36,17 +36,6 @@ print(result)
             with open('sandbox_code.py', 'w') as f:
                 f.write(test_code)
             
-            install_process = subprocess.run(
-                ["python3", "-m", "pip", "install", "numpy", "pandas"],
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-
-            if install_process.returncode != 0:
-                error_message = install_process.stderr.strip()
-                return Response({"status": "error", "message": f"Error installing dependencies: {error_message}"})
-
             # Execute the code in a sandboxed environment
             process = subprocess.run(
             ["python3", "sandbox_code.py"],
