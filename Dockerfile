@@ -24,12 +24,13 @@ RUN apt-get update && apt-get install -y \
     gnupg\
     default-jdk \              
     ruby-full \                
-    g++ \                      
+    g++ \  
+    nodejs \
+    npm\                    
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - \
-    && apt-get install -y nodejs
+
 
 # Install Yarn (optional, if needed for Node.js projects)
 RUN npm install --global yarn
