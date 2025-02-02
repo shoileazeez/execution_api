@@ -1,84 +1,55 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import subprocess
-import re
-import json
+from rest_framework import status
+from .serializers import CodeExecutionSerializer
+from .execute_python import execute_python_code
+from .execute_javascript import execute_javascript_code
+from .execute_java import execute_java_code
+
 class ExecuteCodeView(APIView):
     def post(self, request):
-        code = request.data.get('code', '')
-        input_data = request.data.get('input_data', {})
-        expected_output = request.data.get('expected_output', None)
+        # Validate and parse the request data using the serializer
+        serializer = CodeExecutionSerializer(data=request.data)
         
-        try:
-            function_name_match = re.search(r'def\s+(\w+)\s*\(', code)
-            if function_name_match:
-                function_name = function_name_match.group(1)
+        if serializer.is_valid():
+            code = serializer.validated_data['code']
+            input_data = serializer.validated_data['input_data']
+            expected_output = serializer.validated_data.get('expected_output', None)
+            language = serializer.validated_data['language']
+            
+            # Execute the code based on the specified language
+            if language == 'python':
+                result = execute_python_code(code, input_data)
+            elif language == 'javascript':
+                result = execute_javascript_code(code, input_data)
+            elif language == 'java':
+                result = execute_java_code(code, input_data)
             else:
-                return Response({"status": "error", "message": "No valid function definition found in the provided code."})
-
-            # Constructing the code dynamically
-            if input_data:
-                # If input_data is provided, use it
-                result_statement = f"input_data = {input_data}\nresult = {function_name}(**input_data)"
-            else:
-                # Otherwise, assume the user's code contains the function call
-                result_statement = ""
+                return Response({"status": "error", "message": "Unsupported language."}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Construct the dynamic code to be executed
-            test_code = f"""
-input_data = {input_data}
-{code}
-
-{result_statement}
-print(result)
-"""
-            # Write the code to a temporary file
-            with open('sandbox_code.py', 'w') as f:
-                f.write(test_code)
-            
-            # Execute the code in a sandboxed environment
-            process = subprocess.run(
-            ["python3", "sandbox_code.py"],
-            capture_output=True,
-            text=True,
-            timeout=30
-            )
-
-            if process.returncode != 0:
-                error = process.stderr.strip()
-                return Response({"status": "error", "message": f"Code execution failed: {error}"})
-            
-            # Retrieve and process output
-            # output = process.stdout.strip()
-            output_lines = process.stdout.strip().split('\n')
-            output = output_lines[-1] if output_lines else ''
-            # Compare output with the expected result
-            try:
-                output_dict = json.loads(output)
-                formatted_output = json.dumps(output_dict)  # Ensure double quotes
-            except json.JSONDecodeError:
-                formatted_output = output
-            if str(formatted_output) == str(expected_output):
-                return Response({
-                    "status": "success",
-                    "output": output,
-                    "message": "Your code passed all test cases!"
-                })
+            # Compare the output with the expected output
+            if result["status"] == "success":
+                if str(result["formatted_output"]) == str(expected_output):
+                    return Response({
+                        "status": "success",
+                        "output": result["output"],
+                        "message": "Your code passed all test cases!"
+                    })
+                else:
+                    return Response({
+                        "status": "failure",
+                        "output": result["output"],
+                        "expected_output": expected_output,
+                        "message": "Output does not match the expected output."
+                    })
             else:
                 return Response({
-                    "status": "failure",
-                    "output": formatted_output,
-                    "expected_output": expected_output,
-                    "message": "Output does not match the expected output."
-                })
-        
-        except subprocess.TimeoutExpired:
+                    "status": "error",
+                    "message": result["message"]
+                }, status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response({
                 "status": "error",
-                "message": "Your code took too long to execute."
-            })
-        except Exception as e:
-            return Response({
-                "status": "error",
-                "message": f"An error occurred: {str(e)}"
-            })
+                "message": "Invalid input data",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)

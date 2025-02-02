@@ -1,9 +1,7 @@
 from rest_framework import serializers
 
-class TestCaseSerializer(serializers.Serializer):
-    input_data = serializers.JSONField()
-    expected_output = serializers.JSONField()
-
 class CodeExecutionSerializer(serializers.Serializer):
-    code = serializers.CharField()
-    test_cases = TestCaseSerializer(many=True)  # Accept multiple test cases
+    code = serializers.CharField(required=True, allow_blank=False)
+    input_data = serializers.JSONField(required=False, default={})
+    expected_output = serializers.JSONField(required=False, allow_null=True)
+    language = serializers.ChoiceField(choices=['python', 'javascript', 'java'], default='python')
