@@ -65,7 +65,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import subprocess
-
+import re
 class ExecuteCodeView(APIView):
     def post(self, request):
         code = request.data.get('code', '')
@@ -73,12 +73,24 @@ class ExecuteCodeView(APIView):
         expected_output = request.data.get('expected_output', None)
         
         try:
+            function_name_match = re.search(r'def\s+(\w+)\s*\(', code)
+            if function_name_match:
+                function_name = function_name_match.group(1)
+            else:
+                return Response({"status": "error", "message": "No valid function definition found in the provided code."})
+
+            # Constructing the code dynamically
+            if input_data:
+                result_statement = f"result = {function_name}(**input_data)"
+            else:
+                result_statement = f"result = {function_name}()"
+            
             # Construct the dynamic code to be executed
             test_code = f"""
 input_data = {input_data}
 {code}
 
-result = add(**input_data)
+{result_statement}
 print(result)
 """
             # Write the code to a temporary file
