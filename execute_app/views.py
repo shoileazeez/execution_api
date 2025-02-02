@@ -112,8 +112,9 @@ print(result)
                 return Response({"status": "error", "message": f"Code execution failed: {error}"})
             
             # Retrieve and process output
-            output = process.stdout.strip()
-            
+            # output = process.stdout.strip()
+            output_lines = process.stdout.strip().split('\n')
+            output = output_lines[-1] if output_lines else ''
             # Compare output with the expected result
             if str(output) == str(expected_output):
                 return Response({
