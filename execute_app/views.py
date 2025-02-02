@@ -32,13 +32,13 @@ class ExecuteCodeView(APIView):
                 if str(result["formatted_output"]) == str(expected_output):
                     return Response({
                         "status": "success",
-                        "output": result["output"],
+                        "output": result["formatted_output"],
                         "message": "Your code passed all test cases!"
                     })
                 else:
                     return Response({
                         "status": "failure",
-                        "output": result["output"],
+                        "output": result["formatted_output"],
                         "expected_output": expected_output,
                         "message": "Output does not match the expected output."
                     })
