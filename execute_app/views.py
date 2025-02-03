@@ -28,24 +28,24 @@ class ExecuteCodeView(APIView):
                 return Response({"status": "error", "message": "Unsupported language."}, status=status.HTTP_400_BAD_REQUEST)
             
             # Compare the output with the expected output
-            if result["status"] == "success":
-                if str(result["output"]) == str(expected_output):
+            if result.data["status"] == "success":
+                if str(result.data["output"]) == str(expected_output):
                     return Response({
                         "status": "success",
-                        "output": result["output"],
+                        "output": result.data["output"],
                         "message": "Your code passed all test cases!"
                     })
                 else:
                     return Response({
                         "status": "failure",
-                        "output": result["output"],
+                        "output": result.data["output"],
                         "expected_output": expected_output,
                         "message": "Output does not match the expected output."
                     })
             else:
                 return Response({
                     "status": "error",
-                    "message": result["message"]
+                    "message": result.data["message"]
                 }, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({

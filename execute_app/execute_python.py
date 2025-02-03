@@ -1,6 +1,7 @@
 import subprocess
 import json
 import re
+from rest_framework import status
 from rest_framework.response import Response
 def execute_python_code(code, input_data):
     try:
@@ -50,7 +51,10 @@ print(result)
             formatted_output = json.dumps(output_dict)  # Ensure double quotes
         except json.JSONDecodeError:
             formatted_output = output
-        return {"status": "success", "output": formatted_output}
+        return Response({
+            "status": "success",
+            "output": formatted_output
+        }, status=status.HTTP_200_OK)
     
     except subprocess.TimeoutExpired:
         return {"status": "error", "message": "Python code took too long to execute."}
