@@ -29,6 +29,8 @@ class ExecuteCodeView(APIView):
             
             # Compare the output with the expected output
             if result.data["status"] == "success":
+                print("Execution result:", result.data)
+
                 if str(result.data["output"]) == str(expected_output):
                     return Response({
                         "status": "success",

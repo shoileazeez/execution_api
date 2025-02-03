@@ -43,12 +43,13 @@ print(result)
             error = process.stderr.strip()
             return {"status": "error", "message": f"Python code execution failed: {error}"}
         
-        output_lines = process.stdout.strip().split('\n')
-        output = output_lines[-1] if output_lines else ''
+        output = process.stdout.strip()
+        print(f"output is {output}")
             # Compare output with the expected result
         try:
             output_dict = json.loads(output)
-            formatted_output = json.dumps(output_dict)  # Ensure double quotes
+            formatted_output = json.dumps(output_dict)
+            print(f"formatted_output is {formatted_output}")
         except json.JSONDecodeError:
             formatted_output = output
         return Response({
