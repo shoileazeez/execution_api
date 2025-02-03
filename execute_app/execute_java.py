@@ -1,22 +1,34 @@
 import subprocess
-from rest_framework.response import Response
-from rest_framework import status
+import os
+import uuid
+import re
+
 def execute_java_code(code, input_data):
     try:
-        if input_data:
-                input_data_declaration = f"""
-public static String inputData = "{input_data}";
+        # Generate a unique filename for the Java file to avoid conflicts
+        unique_filename = f"sandbox_code_{uuid.uuid4().hex}"
+        java_file = f"{unique_filename}.java"
+        class_name = unique_filename
+
+        # Ensure the code has a valid class and main method
+        if not re.search(r"public\s+class\s+\w+", code):
+            code = f"""
+public class {class_name} {{
+    {code}
+    public static void main(String[] args) {{
+        // Pass input data and call the function
+        System.out.println({class_name}.execute("{input_data}"));
+    }}
+}}
 """
-                # Assume the user places `inputData` where needed in their code
-                code = code.replace("/*input_data_placeholder*/", input_data_declaration)
 
         # Write the Java code to a temporary file
-        with open('sandbox_code.java', 'w') as f:
+        with open(java_file, 'w') as f:
             f.write(code)
 
         # Compile the Java code
         compile_process = subprocess.run(
-            ["javac", "sandbox_code.java"],
+            ["javac", java_file],
             capture_output=True,
             text=True
         )
@@ -27,7 +39,7 @@ public static String inputData = "{input_data}";
 
         # Execute the compiled Java code
         run_process = subprocess.run(
-            ["java", "sandbox_code"],
+            ["java", unique_filename],
             capture_output=True,
             text=True,
             timeout=30
@@ -37,13 +49,17 @@ public static String inputData = "{input_data}";
             error = run_process.stderr.strip()
             return {"status": "error", "message": f"Java code execution failed: {error}"}
 
+        # Capture the output
         output = run_process.stdout.strip()
-        return Response({
-            "status": "success",
-            "output": output
-        }, status=status.HTTP_200_OK)
+
+        # Clean up generated files
+        os.remove(java_file)
+        os.remove(f"{unique_filename}.class")
+
+        return {"status": "success", "output": output}
 
     except subprocess.TimeoutExpired:
-        return Response({"status": "error", "message": "Java code took too long to execute."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        return {"status": "error", "message": "Java code took too long to execute."}
     except Exception as e:
-        return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return {"status": "error", "message": str(e)}
+

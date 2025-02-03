@@ -1,43 +1,62 @@
 import subprocess
 import json
-from rest_framework.response import Response
-from rest_framework import status
+import re
+import os
+
 def execute_javascript_code(code, input_data):
     try:
-        # Prepare the JavaScript code to be executed dynamically
-        input_data_str = json.dumps(input_data)
-        test_code = f"""
-        const inputData = {input_data_str};
-        {code}
-        console.log(result);  // Make sure result is printed
-        """
+        # Extract function name dynamically
+        function_name_match = re.search(r'function\s+(\w+)\s*\(', code)
+        if not function_name_match:
+            return {"status": "error", "message": "No valid function definition found in the provided code."}
 
-        # Write the code to a temporary file
-        with open('sandbox_code.js', 'w') as f:
-            f.write(test_code)
+        function_name = function_name_match.group(1)
 
-        # Execute the JavaScript code in a Node.js environment
+        # Format input data as a JavaScript variable
+        input_data_js = json.dumps(input_data)  # Serialize input data to JSON
+        result_statement = f"const inputData = {input_data_js};\nconst result = {function_name}(inputData);\nconsole.log(result);"
+
+        # Construct the JavaScript code
+        full_code = f"""
+{code}
+{result_statement}
+"""
+
+        # Write the JavaScript code to a temporary file
+        temp_file = "sandbox_code.js"
+        with open(temp_file, 'w') as f:
+            f.write(full_code)
+
+        # Execute the JavaScript code using Node.js
         process = subprocess.run(
-            ["node", "sandbox_code.js"],
+            ["node", temp_file],
             capture_output=True,
             text=True,
             timeout=30
         )
 
+        # Cleanup: Delete the temporary file
+        os.remove(temp_file)
+
         if process.returncode != 0:
             error = process.stderr.strip()
-            return Response({"status": "error", "message": f"JavaScript code execution failed: {error}"}, status=status.HTTP_400_BAD_REQUEST)
+            return {"status": "error", "message": f"JavaScript code execution failed: {error}"}
 
         output = process.stdout.strip()
-        if not output:
-            return Response({"status": "error", "message": "No output was returned from the JavaScript code."}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
+        # Attempt to format the output as JSON if applicable
+        try:
+            output_dict = json.loads(output)
+            formatted_output = json.dumps(output_dict, indent=4)
+        except json.JSONDecodeError:
+            formatted_output = output
+
+        return {
             "status": "success",
-            "output": output
-        }, status=status.HTTP_200_OK)
+            "output": formatted_output
+        }
 
     except subprocess.TimeoutExpired:
-        return Response({"status": "error", "message": "JavaScript code took too long to execute."}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        return {"status": "error", "message": "JavaScript code took too long to execute."}
     except Exception as e:
-        return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return {"status": "error", "message": str(e)}
