@@ -1,5 +1,6 @@
 import subprocess
 from rest_framework.response import Response
+from rest_framework import status
 def execute_java_code(code, input_data):
     try:
         if input_data:
@@ -36,7 +37,7 @@ public static String inputData = "{input_data}";
             error = run_process.stderr.strip()
             return {"status": "error", "message": f"Java code execution failed: {error}"}
 
-        formatted_output = run_process.stdout.strip()
+        output = run_process.stdout.strip()
         return Response({
             "status": "success",
             "output": output
