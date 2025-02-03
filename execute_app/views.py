@@ -29,10 +29,10 @@ class ExecuteCodeView(APIView):
             
             # Compare the output with the expected output
             if result["status"] == "success":
-                if str(result["formatted_output"]) == str(expected_output):
+                if str(result["output"]) == str(expected_output):
                     return Response({
                         "status": "success",
-                        "output": result["formatted_output"],
+                        "output": result["output"],
                         "message": "Your code passed all test cases!"
                     })
                 else:
