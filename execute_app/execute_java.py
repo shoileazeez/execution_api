@@ -1,5 +1,5 @@
 import subprocess
-
+from rest_framework.response import Response
 def execute_java_code(code, input_data):
     try:
         if input_data:
@@ -37,9 +37,12 @@ public static String inputData = "{input_data}";
             return {"status": "error", "message": f"Java code execution failed: {error}"}
 
         formatted_output = run_process.stdout.strip()
-        return {"status": "success", "output": formatted_output}
-    
+        return Response({
+            "status": "success",
+            "output": output
+        }, status=status.HTTP_200_OK)
+
     except subprocess.TimeoutExpired:
-        return {"status": "error", "message": "Java code took too long to execute."}
+        return Response({"status": "error", "message": "Java code took too long to execute."}, status=status.HTTP_408_REQUEST_TIMEOUT)
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
