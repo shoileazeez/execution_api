@@ -38,7 +38,7 @@ class ExecuteCodeView(APIView):
                 else:
                     return Response({
                         "status": "failure",
-                        "output": result["formatted_output"],
+                        "output": result["output"],
                         "expected_output": expected_output,
                         "message": "Output does not match the expected output."
                     })
