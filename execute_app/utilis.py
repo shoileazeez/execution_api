@@ -38,14 +38,15 @@ def execute_code(language, code, input_data, expected_output):
 
         try:
             # Run the Docker container
-            result = subprocess.run(
-                f"{' '.join(command)} < input.txt",
-                shell=True,  # Allows using `&&` for multiple commands
-                cwd=tmpdir,  # Run inside temp dir
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=5  # Limit execution time to 5 seconds
-            )
+            with open(input_path, "rb") as input_file:
+                result = subprocess.run(
+                    command,
+                    cwd=tmpdir,
+                    stdin=input_file,  # Pass input to subprocess
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=5
+                )
             stdout = result.stdout.decode().strip()
             stderr = result.stderr.decode().strip()
 
