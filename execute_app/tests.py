@@ -95,31 +95,35 @@
 # response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
 # print(response.json())
 
+# import requests
+
+# payload = {
+#     "language": "javascript",
+#     "version": "16.3.0",
+#     "files": [
+#         {
+#             "name": "js_test.js",
+#             "content": """console.time("Performance Test");
+
+# // Generate 1 million random numbers
+# let arr = Array.from({ length: 1_000_000 }, () => Math.floor(Math.random() * 1000000));
+
+# // Sort the array (O(n log n) complexity)
+# arr.sort((a, b) => a - b);
+
+# // Find the median
+# let median = arr.length % 2 === 0 ? (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2 : arr[Math.floor(arr.length / 2)];
+
+# console.timeEnd("Performance Test");
+# console.log("Median Value:", median);
+# """
+#         }
+#     ]
+# }
+
+# response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
+# print(response.json())
+
 import requests
-
-payload = {
-    "language": "javascript",
-    "version": "18.0.0",
-    "files": [
-        {
-            "name": "js_test.js",
-            "content": """console.time("Performance Test");
-
-// Generate 1 million random numbers
-let arr = Array.from({ length: 1_000_000 }, () => Math.floor(Math.random() * 1000000));
-
-// Sort the array (O(n log n) complexity)
-arr.sort((a, b) => a - b);
-
-// Find the median
-let median = arr.length % 2 === 0 ? (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2 : arr[Math.floor(arr.length / 2)];
-
-console.timeEnd("Performance Test");
-console.log("Median Value:", median);
-"""
-        }
-    ]
-}
-
-response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
+response = requests.get("http://localhost:2000/api/v2/piston/runtimes")
 print(response.json())

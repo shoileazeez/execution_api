@@ -2,19 +2,35 @@ import subprocess
 import tempfile
 import os
 
-# Map of languages to Docker images and filenames
 LANGUAGE_CONFIG = {
-    "python": {"image": "sandbox-python", "filename": "code.py", "command": ["python", "code.py"]},
-    "javascript": {"image": "sandbox-node", "filename": "code.js", "command": ["node", "code.js"]},
-    "cpp": {"image": "sandbox-cpp", "filename": "code.cpp", "command": ["g++", "code.cpp", "-o", "code.out", "&&", "./code.out"]},
-    "java": {"image": "sandbox-java", "filename": "Main.java", "command": ["javac", "Main.java", "&&", "java", "Main"]},
-    "go": {"image": "sandbox-go", "filename": "main.go", "command": ["go", "run", "main.go"]},
-    "ruby": {"image": "sandbox-ruby", "filename": "code.rb", "command": ["ruby", "code.rb"]},
-    "php": {"image": "sandbox-php", "filename": "code.php", "command": ["php", "code.php"]},
-    "csharp": {"image": "sandbox-csharp", "filename": "Program.cs", "command": ["mcs", "Program.cs", "&&", "mono", "Program.exe"]},
-    "swift": {"image": "sandbox-swift", "filename": "main.swift", "command": ["swift", "main.swift"]},
-    "kotlin": {"image": "sandbox-kotlin", "filename": "main.kt", "command": ["kotlinc", "main.kt", "-include-runtime", "-d", "main.jar", "&&", "java", "-jar", "main.jar"]},
+    "python": {"filename": "code.py", "run_command": ["python3", "code.py"]},
+    "javascript": {"filename": "code.js", "run_command": ["node", "code.js"]},
+    "java": {
+        "filename": "Main.java",
+        "compile_command": ["javac", "Main.java"],
+        "run_command": ["java", "Main"],
+    },
+    "cpp": {
+        "filename": "code.cpp",
+        "compile_command": ["g++", "code.cpp", "-o", "code.out"],
+        "run_command": ["./code.out"],
+    },
+    "c": {
+        "filename": "code.c",
+        "compile_command": ["gcc", "code.c", "-o", "code.out"],
+        "run_command": ["./code.out"],
+    },
+    "ruby": {"filename": "code.rb", "run_command": ["ruby", "code.rb"]},
+    "go": {"filename": "main.go", "run_command": ["go", "run", "main.go"]},
+    "php": {"filename": "code.php", "run_command": ["php", "code.php"]},
+    "swift": {"filename": "main.swift", "run_command": ["swift", "main.swift"]},
+    "rust": {
+        "filename": "main.rs",
+        "compile_command": ["rustc", "main.rs", "-o", "main.out"],
+        "run_command": ["./main.out"],
+    },
 }
+
 
 def execute_code(language, code, input_data, expected_output):
     if language not in LANGUAGE_CONFIG:
@@ -22,36 +38,41 @@ def execute_code(language, code, input_data, expected_output):
 
     config = LANGUAGE_CONFIG[language]
     filename = config["filename"]
-    command = config["command"]
-    image = config["image"]
 
-    # Create a temporary directory for the code file
     with tempfile.TemporaryDirectory() as tmpdir:
         code_path = os.path.join(tmpdir, filename)
-        input_path = os.path.join(tmpdir, "input.txt")
 
-        # Write the code and input to files
+        # Write code to temporary file
         with open(code_path, "w") as code_file:
             code_file.write(code)
-        with open(input_path, "w") as input_file:
-            input_file.write(input_data)
 
         try:
-            # Run the Docker container
-            with open(input_path, "rb") as input_file:
-                result = subprocess.run(
-                    command,
+            # Compile step (if required)
+            if "compile_command" in config:
+                compile_result = subprocess.run(
+                    config["compile_command"],
                     cwd=tmpdir,
-                    stdin=input_file,  # Pass input to subprocess
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    timeout=5
+                    timeout=5,
                 )
+                if compile_result.returncode != 0:
+                    return {"error": "Compilation failed", "stderr": compile_result.stderr.decode().strip()}
+
+            # Run step
+            result = subprocess.run(
+                config["run_command"],
+                cwd=tmpdir,
+                input=input_data.encode(),  # Pass input data as stdin
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=5,
+            )
+
             stdout = result.stdout.decode().strip()
             stderr = result.stderr.decode().strip()
-
-            # Compare actual and expected output
             status = "Passed" if stdout == expected_output else "Failed"
+
             return {
                 "stdout": stdout,
                 "stderr": stderr,
