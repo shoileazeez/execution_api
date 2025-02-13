@@ -35,13 +35,14 @@ RUN apt-get update && apt-get install -y \
     php-zip \
     rustc \
     cargo \
+    kotlin \
     r-base \
     perl \
     lua5.3 \   
     erlang \
     elixir \
     bash \
-    mono-complete \
+    npm install -g ts-node typescript \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Yarn (optional, if needed for Node.js projects)

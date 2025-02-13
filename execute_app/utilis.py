@@ -44,11 +44,6 @@ LANGUAGE_CONFIG = {
         "run_command": ["erl", "-noshell", "-s", "script", "start", "-s", "init", "stop"],
     },
     "elixir": {"filename": "script.exs", "run_command": ["elixir", "script.exs"]},
-    "csharp": {
-        "filename": "Program.cs",
-        "compile_command": ["csc", "-out:Program.exe", "Program.cs"],
-        "run_command": ["mono", "Program.exe"],
-    },
 }
 
 
