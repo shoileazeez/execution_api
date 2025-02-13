@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y \
     python3-distutils \
     python3-dev \
+    python3-numpy \
+    python3-pandas \
     libpq-dev \
     build-essential \
     libffi-dev \
@@ -26,7 +28,16 @@ RUN apt-get update && apt-get install -y \
     ruby-full \                
     g++ \  
     nodejs \
-    npm\                    
+    npm\
+    golang \
+    php-cli \
+    php-mbstring \
+    php-xml \
+    php-curl \
+    php-zip \
+    rustc \
+    cargo \
+    swift \       
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
