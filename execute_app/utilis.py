@@ -62,7 +62,6 @@ def execute_code(language, code, input_data, expected_output):
             code_file.write(code)
 
         try:
-            # Compile step (if required)
             if "compile_command" in config:
                 compile_result = subprocess.run(
                     config["compile_command"],
@@ -70,7 +69,6 @@ def execute_code(language, code, input_data, expected_output):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     timeout=5,
-                    preexec_fn=lambda: os.setsid(),
                 )
                 if compile_result.returncode != 0:
                     return {"error": "Compilation failed", "stderr": compile_result.stderr.decode().strip()}
@@ -79,11 +77,10 @@ def execute_code(language, code, input_data, expected_output):
             result = subprocess.run(
                 config["run_command"],
                 cwd=tmpdir,
-                input=input_data.encode(),  # Pass input data as stdin
+                input=input_data.encode(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5,
-                preexec_fn=lambda: os.setsid(),
             )
 
             stdout = result.stdout.decode().strip()
