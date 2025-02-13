@@ -70,6 +70,7 @@ def execute_code(language, code, input_data, expected_output):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     timeout=5,
+                    preexec_fn=lambda: os.setsid(),
                 )
                 if compile_result.returncode != 0:
                     return {"error": "Compilation failed", "stderr": compile_result.stderr.decode().strip()}
@@ -82,6 +83,7 @@ def execute_code(language, code, input_data, expected_output):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5,
+                preexec_fn=lambda: os.setsid(),
             )
 
             stdout = result.stdout.decode().strip()

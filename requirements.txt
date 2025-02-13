@@ -1,5 +1,6 @@
 django==4.2
 djangorestframework==3.14.0
+django-cors-headers==4.6.0
 gunicorn==21.2.0
 docker==6.1.2
 whitenoise==6.8.2
