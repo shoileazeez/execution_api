@@ -39,13 +39,9 @@ def execute_code(language, code, input_data, expected_output):
         try:
             # Run the Docker container
             result = subprocess.run(
-                [
-                    "docker", "run", "--rm",
-                    "-v", f"{tmpdir}:/sandbox",
-                    "-w", "/sandbox",
-                    image, "/bin/sh", "-c",
-                    f"{' '.join(command)} < input.txt"
-                ],
+                f"{' '.join(command)} < input.txt",
+                shell=True,  # Allows using `&&` for multiple commands
+                cwd=tmpdir,  # Run inside temp dir
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5  # Limit execution time to 5 seconds
