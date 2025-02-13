@@ -1,57 +1,28 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import CodeExecutionSerializer
-from .execute_python import execute_python_code
-from .execute_javascript import execute_javascript_code
-from .execute_java import execute_java_code
+from .utilis import execute_code, LANGUAGE_CONFIG
 
 class ExecuteCodeView(APIView):
     def post(self, request):
-        # Validate and parse the request data using the serializer
-        serializer = CodeExecutionSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            code = serializer.validated_data['code']
-            input_data = serializer.validated_data['input_data']
-            expected_output = serializer.validated_data.get('expected_output', None)
-            language = serializer.validated_data['language']
-            
-            # Execute the code based on the specified language
-            if language == 'python':
-                result = execute_python_code(code, input_data)
-            elif language == 'javascript':
-                result = execute_javascript_code(code, input_data)
-            elif language == 'java':
-                result = execute_java_code(code, input_data)
-            else:
-                return Response({"status": "error", "message": "Unsupported language."}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Compare the output with the expected output
-            if result["status"] == "success": 
-                print("Execution result:", result)
+        language = request.data.get("language")
+        code = request.data.get("code")
+        input_data = request.data.get("input", "")
+        expected_output = request.data.get("expected", "")
 
-                if str(result["output"]) == str(expected_output):
-                    return Response({
-                        "status": "success",
-                        "output": result["output"],
-                        "message": "Your code passed all test cases!"
-                    })
-                else:
-                    return Response({
-                        "status": "failure",
-                        "output": result["output"],
-                        "expected_output": expected_output,
-                        "message": "Output does not match the expected output."
-                    })
-            else:
-                return Response({
-                    "status": "error",
-                    "message": result["message"]
-                }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({
-                "status": "error",
-                "message": "Invalid input data",
-                "errors": serializer.errors
-            }, status=status.HTTP_400_BAD_REQUEST)
+        if not language or not code or expected_output is None:
+            return Response(
+                {"error": "language, code, and expected output are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Execute the code
+        result = execute_code(language, code, input_data, expected_output)
+        if "error" in result:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+        return Response(result, status=status.HTTP_200_OK)
+
+class SupportedLanguagesView(APIView):
+    def get(self, request):
+        languages = list(LANGUAGE_CONFIG.keys())
+        return Response({"languages": languages})

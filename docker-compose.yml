@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile  # For API
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - sandbox-python
+      - sandbox-javascript
+      - sandbox-java
+      - sandbox-cpp
+      - sandbox-c
+      - sandbox-ruby
+      - sandbox-go
+      - sandbox-rust
+      - sandbox-php
+      - sandbox-swift
+
+  sandbox-python:
+    build:
+      context: ./sandbox-images/python
+    stdin_open: true
+    tty: true
+
+  sandbox-javascript:
+    build:
+      context: ./sandbox-images/javascript
+    stdin_open: true
+    tty: true
+
+  sandbox-java:
+    build:
+      context: ./sandbox-images/java
+    stdin_open: true
+    tty: true
+
+  sandbox-cpp:
+    build:
+      context: ./sandbox-images/cpp
+    stdin_open: true
+    tty: true
+
+  sandbox-c:
+    build:
+      context: ./sandbox-images/c
+    stdin_open: true
+    tty: true
+
+  sandbox-ruby:
+    build:
+      context: ./sandbox-images/ruby
+    stdin_open: true
+    tty: true
+
+  sandbox-go:
+    build:
+      context: ./sandbox-images/go
+    stdin_open: true
+    tty: true
+
+  sandbox-rust:
+    build:
+      context: ./sandbox-images/rust
+    stdin_open: true
+    tty: true
+
+  sandbox-php:
+    build:
+      context: ./sandbox-images/php
+    stdin_open: true
+    tty: true
+
+  sandbox-swift:
+    build:
+      context: ./sandbox-images/swift
+    stdin_open: true
+    tty: true
