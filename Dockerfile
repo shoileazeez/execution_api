@@ -42,10 +42,11 @@ RUN apt-get update && apt-get install -y \
     erlang \
     elixir \
     bash \
-    npm install -g ts-node typescript \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Yarn (optional, if needed for Node.js projects)
+RUN npm install -g ts-node typescript
+
 RUN npm install --global yarn
 
 # Install Ruby Gems (if your Ruby scripts need any)
