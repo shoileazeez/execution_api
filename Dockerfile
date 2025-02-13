@@ -16,8 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y \
     python3-distutils \
     python3-dev \
-    python3-numpy \
-    python3-pandas \
     libpq-dev \
     build-essential \
     libffi-dev \
@@ -37,10 +35,16 @@ RUN apt-get update && apt-get install -y \
     php-zip \
     rustc \
     cargo \
-    swift \       
+    r-base \
+    perl \
+    dart \
+    lua5.3 \   
+    erlang \
+    elixir \
+    bash \
+    mono-complete \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js
 
 
 # Install Yarn (optional, if needed for Node.js projects)

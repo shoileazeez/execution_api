@@ -23,11 +23,32 @@ LANGUAGE_CONFIG = {
     "ruby": {"filename": "code.rb", "run_command": ["ruby", "code.rb"]},
     "go": {"filename": "main.go", "run_command": ["go", "run", "main.go"]},
     "php": {"filename": "code.php", "run_command": ["php", "code.php"]},
-    "swift": {"filename": "main.swift", "run_command": ["swift", "main.swift"]},
     "rust": {
         "filename": "main.rs",
         "compile_command": ["rustc", "main.rs", "-o", "main.out"],
         "run_command": ["./main.out"],
+    },
+    "kotlin": {
+        "filename": "main.kt",
+        "compile_command": ["kotlinc", "main.kt", "-include-runtime", "-d", "main.jar"],
+        "run_command": ["java", "-jar", "main.jar"],
+    },
+    "r": {"filename": "script.R", "run_command": ["Rscript", "script.R"]},
+    "perl": {"filename": "script.pl", "run_command": ["perl", "script.pl"]},
+    "dart": {"filename": "main.dart", "run_command": ["dart", "main.dart"]},
+    "lua": {"filename": "main.lua", "run_command": ["lua", "main.lua"]},
+    "typescript": {"filename": "code.ts", "run_command": ["ts-node", "code.ts"]},
+    "bash": {"filename": "script.sh", "run_command": ["bash", "script.sh"]},
+    "erlang": {
+        "filename": "script.erl",
+        "compile_command": ["erlc", "script.erl"],
+        "run_command": ["erl", "-noshell", "-s", "script", "start", "-s", "init", "stop"],
+    },
+    "elixir": {"filename": "script.exs", "run_command": ["elixir", "script.exs"]},
+    "csharp": {
+        "filename": "Program.cs",
+        "compile_command": ["csc", "-out:Program.exe", "Program.cs"],
+        "run_command": ["mono", "Program.exe"],
     },
 }
 
