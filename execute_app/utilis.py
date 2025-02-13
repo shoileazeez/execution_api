@@ -35,7 +35,6 @@ LANGUAGE_CONFIG = {
     },
     "r": {"filename": "script.R", "run_command": ["Rscript", "script.R"]},
     "perl": {"filename": "script.pl", "run_command": ["perl", "script.pl"]},
-    "dart": {"filename": "main.dart", "run_command": ["dart", "main.dart"]},
     "lua": {"filename": "main.lua", "run_command": ["lua", "main.lua"]},
     "typescript": {"filename": "code.ts", "run_command": ["ts-node", "code.ts"]},
     "bash": {"filename": "script.sh", "run_command": ["bash", "script.sh"]},

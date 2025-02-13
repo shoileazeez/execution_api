@@ -37,15 +37,12 @@ RUN apt-get update && apt-get install -y \
     cargo \
     r-base \
     perl \
-    dart \
     lua5.3 \   
     erlang \
     elixir \
     bash \
     mono-complete \
     && rm -rf /var/lib/apt/lists/*
-
-
 
 # Install Yarn (optional, if needed for Node.js projects)
 RUN npm install --global yarn
