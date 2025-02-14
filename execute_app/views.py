@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .utilis import execute_code, LANGUAGE_CONFIG
 import re
+import json
 
 def is_malicious_code(code):
     """
@@ -37,7 +38,11 @@ class ExecuteCodeView(APIView):
         if is_malicious_code(code):
             return Response({"error": "Potentially malicious code detected!"}, status=400)
 
-        
+        if isinstance(input_data, dict):
+            input_data = json.dumps(input_data)  # Convert dict → JSON string
+        elif not isinstance(input_data, str):
+            return Response({"error": "Invalid input format. Must be string or JSON."}, status=400)
+
         # Execute the code
         result = execute_code(language, code, input_data, expected_output)
         if "error" in result:

@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 import os
-
+import resource
 LANGUAGE_CONFIG = {
     "python": {"filename": "code.py", "run_command": ["python3", "code.py"]},
     "javascript": {"filename": "code.js", "run_command": ["node", "code.js"]},
@@ -46,6 +46,10 @@ LANGUAGE_CONFIG = {
     "elixir": {"filename": "script.exs", "run_command": ["elixir", "script.exs"]},
 }
 
+def set_limits():
+    """Set CPU and memory limits for sandboxing."""
+    resource.setrlimit(resource.RLIMIT_CPU, (5, 5))  # Max 5 seconds of CPU time
+    resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))  # Max 256MB RAM
 
 def execute_code(language, code, input_data, expected_output):
     if language not in LANGUAGE_CONFIG:
@@ -80,6 +84,7 @@ def execute_code(language, code, input_data, expected_output):
                 input=input_data.encode(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                preexec_fn=set_limits,
                 timeout=5,
             )
 
