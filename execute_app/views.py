@@ -38,10 +38,28 @@ class ExecuteCodeView(APIView):
         if is_malicious_code(code):
             return Response({"error": "Potentially malicious code detected!"}, status=400)
 
-        if isinstance(input_data, dict):
-            input_data = json.dumps(input_data)  # Convert dict → JSON string
+        if isinstance(input_data, (dict, list)):
+            try:
+                input_data = json.dumps(input_data)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid JSON structure in input"}, status=400)
         elif not isinstance(input_data, str):
-            return Response({"error": "Invalid input format. Must be string or JSON."}, status=400)
+            try:
+                input_data = str(input_data)
+            except:
+                return Response({"error": "Input must be convertible to a string"}, status=400)
+
+        # Handle expected output in different formats
+        if isinstance(expected_output, (dict, list)):
+            try:
+                expected_output = json.dumps(expected_output)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid JSON structure in expected output"}, status=400)
+        elif not isinstance(expected_output, str):
+            try:
+                expected_output = str(expected_output)
+            except:
+                return Response({"error": "Expected output must be convertible to a string"}, status=400)
 
         # Execute the code
         result = execute_code(language, code, input_data, expected_output)
