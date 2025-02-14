@@ -77,14 +77,19 @@ def execute_code(language, code, input_data, expected_output):
             result = subprocess.run(
                 config["run_command"],
                 cwd=tmpdir,
-                input=json.dumps(input_data).encode(),
+                input=json.dumps(input_data).encode("utf-8"),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5,
+                check=True,
             )
+            
+            print(f"Raw stdout: {result.stdout}")
+            print(f"Raw stderr: {result.stderr}")
 
-            stdout = result.stdout.decode().strip()
-            stderr = result.stderr.decode().strip()
+            stdout = result.stdout.decode("utf-8", errors="ignore").strip()
+            stderr = result.stderr.decode("utf-8", errors="ignore").strip()
+
             status = "Passed" if stdout == expected_output else "Failed"
 
             return {
