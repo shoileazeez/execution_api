@@ -62,6 +62,13 @@ def execute_code(language, code, input_data, expected_output):
             code_file.write(code)
 
         try:
+            
+            if isinstance(input_data, dict):
+                input_bytes = json.dumps(input_data).encode()  # Convert dict → JSON string → bytes
+            elif isinstance(input_data, str):
+                input_bytes = input_data.encode()  # Convert string → bytes
+            else:
+                raise ValueError("input_data must be a dictionary or a JSON string")
             if "compile_command" in config:
                 compile_result = subprocess.run(
                     config["compile_command"],
@@ -72,13 +79,7 @@ def execute_code(language, code, input_data, expected_output):
                 )
                 if compile_result.returncode != 0:
                     return {"error": "Compilation failed", "stderr": compile_result.stderr.decode().strip()}
-                if isinstance(input_data, dict):
-                    input_bytes = json.dumps(input_data).encode()  # Convert dict → JSON string → bytes
-                elif isinstance(input_data, str):
-                    input_bytes = input_data.encode()  # Convert string → bytes
-                else:
-                    raise ValueError("input_data must be a dictionary or a JSON string")
-        
+
             # Run step
             result = subprocess.run(
                 config["run_command"],
