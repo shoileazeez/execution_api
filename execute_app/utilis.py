@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 import os
-import json
+
 LANGUAGE_CONFIG = {
     "python": {"filename": "code.py", "run_command": ["python3", "code.py"]},
     "javascript": {"filename": "code.js", "run_command": ["node", "code.js"]},
@@ -62,13 +62,6 @@ def execute_code(language, code, input_data, expected_output):
             code_file.write(code)
 
         try:
-            
-            if isinstance(input_data, dict):
-                input_bytes = json.dumps(input_data).encode()  # Convert dict → JSON string → bytes
-            elif isinstance(input_data, str):
-                input_bytes = input_data.encode()  # Convert string → bytes
-            else:
-                raise ValueError("input_data must be a dictionary or a JSON string")
             if "compile_command" in config:
                 compile_result = subprocess.run(
                     config["compile_command"],
@@ -84,11 +77,10 @@ def execute_code(language, code, input_data, expected_output):
             result = subprocess.run(
                 config["run_command"],
                 cwd=tmpdir,
-                input=input_bytes,
+                input=input_data.encode(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5,
-                check=True,
             )
 
             stdout = result.stdout.decode().strip()
@@ -100,8 +92,7 @@ def execute_code(language, code, input_data, expected_output):
                 "stderr": stderr,
                 "output": stdout,
                 "expected": expected_output,
-                "status": status,
-                "return_code": result.returncode
+                "status": status
             }
 
         except subprocess.TimeoutExpired:
