@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 import os
-
+import json
 LANGUAGE_CONFIG = {
     "python": {"filename": "code.py", "run_command": ["python3", "code.py"]},
     "javascript": {"filename": "code.js", "run_command": ["node", "code.js"]},
@@ -77,7 +77,7 @@ def execute_code(language, code, input_data, expected_output):
             result = subprocess.run(
                 config["run_command"],
                 cwd=tmpdir,
-                input=input_data.encode(),
+                input=json.dumps(input_data).encode(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 timeout=5,
