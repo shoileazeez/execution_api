@@ -2,6 +2,7 @@ import subprocess
 import tempfile
 import os
 import resource
+import json
 LANGUAGE_CONFIG = {
     "python": {"filename": "code.py", "run_command": ["python3", "code.py"],
                "input_syntax": "import sys\ninput_data = sys.stdin.read().strip()\n"},
@@ -81,18 +82,144 @@ def execute_code(language, code, input_data, expected_output):
 
     config = LANGUAGE_CONFIG[language]
     filename = config["filename"]
-    input_syntax = config.get("input_syntax", "")
     
     
 
     with tempfile.TemporaryDirectory() as tmpdir:
         code_path = os.path.join(tmpdir, filename)
         
+        
+        input_path = os.path.join(tmpdir, "input.json")
+
+        # Save input data as a JSON file
+        with open(input_path, "w") as input_file:
+            json.dump(input_data, input_file)
+
+        # Language-specific input syntax to read the JSON file
+        if language == "python":
+            input_syntax = (
+                "import json\n"
+                f"with open('{input_path}', 'r') as f:\n"
+                "    input_data = json.load(f)\n"
+            )
+        elif language == "javascript":
+            input_syntax = (
+                "const fs = require('fs');\n"
+                f"const input_data = JSON.parse(fs.readFileSync('{input_path}', 'utf8'));\n"
+            )
+        elif language == "java":
+            input_syntax = (
+                "import java.nio.file.*;\n"
+                "import org.json.*;\n"
+                "class Main {\n"
+                "    public static void main(String[] args) throws Exception {\n"
+                f"        String content = new String(Files.readAllBytes(Paths.get(\"{input_path}\")));\n"
+                "        JSONObject input_data = new JSONObject(content);\n"
+            )
+        elif language == "c":
+            input_syntax = (
+                "#include <stdio.h>\n"
+                "#include <stdlib.h>\n"
+                "#include <string.h>\n"
+                "int main() {\n"
+                f"    FILE *file = fopen(\"{input_path}\", \"r\");\n"
+                "    if (!file) { printf(\"Error: Cannot open file\"); return 1; }\n"
+                "    char buffer[1024]; fread(buffer, 1, 1024, file); fclose(file);\n"
+                "    // Parse JSON manually in C\n"
+            )
+        elif language == "cpp":
+            input_syntax = (
+                "#include <iostream>\n"
+                "#include <fstream>\n"
+                "#include <nlohmann/json.hpp>\n"
+                "using json = nlohmann::json;\n"
+                "int main() {\n"
+                f"    std::ifstream file(\"{input_path}\");\n"
+                "    json input_data; file >> input_data;\n"
+            )
+        elif language == "ruby":
+            input_syntax = (
+                "require 'json'\n"
+                f"input_data = JSON.parse(File.read('{input_path}'))\n"
+                )
+        elif language == "go":
+            input_syntax = (
+                "package main\n"
+                "import (\n"
+                "    \"encoding/json\"\n"
+                "    \"fmt\"\n"
+                "    \"io/ioutil\"\n"
+                "    \"os\"\n"
+                ")\n"
+                "func main() {\n"
+                f"    data, _ := ioutil.ReadFile(\"{input_path}\")\n"
+                "    var input_data map[string]interface{}\n"
+                "    json.Unmarshal(data, &input_data)\n"
+                )
+        elif language == "php":
+            input_syntax = (
+                "<?php\n"
+                f"$input_data = json_decode(file_get_contents('{input_path}'), true);\n"
+            )
+        elif language == "rust":
+            input_syntax = (
+                "use std::fs;\n"
+                "use serde_json::Value;\n"
+                "fn main() {\n"
+                f"    let data = fs::read_to_string(\"{input_path}\").unwrap();\n"
+                "    let input_data: Value = serde_json::from_str(&data).unwrap();\n"
+                )
+        elif language == "kotlin":
+            input_syntax = (
+                "import java.io.File\n"
+                "import org.json.JSONObject\n"
+                "fun main() {\n"
+                f"    val content = File(\"{input_path}\").readText()\n"
+                "    val input_data = JSONObject(content)\n"
+                )
+        elif language == "r":
+            input_syntax = (
+                f"input_data <- jsonlite::fromJSON('{input_path}')\n"
+                )
+        elif language == "perl":
+            input_syntax = (
+                "use JSON;\n"
+                f"my $input_data = decode_json(scalar read_file('{input_path}'));\n"
+                )
+        elif language == "lua":
+            input_syntax = (
+                "local json = require('dkjson')\n"
+                f"local file = io.open('{input_path}', 'r')\n"
+                "local input_data = json.decode(file:read('*a'))\n"
+                )
+        elif language == "typescript":
+            input_syntax = (
+                "import * as fs from 'fs';\n"
+                f"const input_data = JSON.parse(fs.readFileSync('{input_path}', 'utf8'));\n"
+                )
+        elif language == "bash":
+            input_syntax = (
+                f"input_data=$(cat {input_path})\n"
+                )
+        elif language == "erlang":
+            input_syntax = (
+                "file:read_file(\"{input_path}\").\n"
+                "json:decode(Data).\n"
+                )
+        elif language == "elixir":
+            input_syntax = (
+                "content = File.read!(\"{input_path}\")\n"
+                "input_data = Jason.decode!(content)\n"
+    )
+        else:
+            input_syntax = "Unsupported language"
+
         final_code = input_syntax + code
 
-        # Write code to temporary file
+        # Write the code to a file
         with open(code_path, "w") as code_file:
             code_file.write(final_code)
+
 
         try:
             if "compile_command" in config:
@@ -110,7 +237,6 @@ def execute_code(language, code, input_data, expected_output):
             result = subprocess.run(
                 config["run_command"],
                 cwd=tmpdir,
-                input=input_data.encode(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 preexec_fn=set_limits,
