@@ -1,129 +1,50 @@
-import requests
+import pickle
+import tempfile
+import subprocess
+import os
 
-payload = {
-    "language": "python",
-    "version": "3.10",
-    "files": [
-        {
-            "name": "code.py",
-            "content": """nums = [int(x) for x in input().split()]
-target = int(input())
+def run_subprocess(input_data):
+    # Serialize input data to bytes
+    input_bytes = pickle.dumps(input_data)
 
-def two_sum(nums, target):
-    num_map = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in num_map:
-            return [num_map[complement], i]
-        num_map[num] = i
+    # Create a temporary file to store input data
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pkl") as temp_file:
+        temp_file.write(input_bytes)  # Write serialized data
+        temp_file_path = temp_file.name  # Get file path
 
-result = two_sum(nums, target)
-print(result)
-"""
-        }
-    ],
-    "stdin": "2 7 11 15\n9"  # Corrected input placement
-}
+    try:
+        # Run subprocess with the temp file as an argument
+        result = subprocess.run(
+            ["python3", "-c",
+             "import pickle, sys; data = pickle.load(open(sys.argv[1], 'rb')); print('Received:', data)",
+             temp_file_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            input=None,  # No need to use stdin
+            timeout=5,
+            text=True,
+            check=True,
+        )
 
-response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
-print(response.json())
+        # Decode output
+        stdout_output = result.stdout.strip()
+        stderr_output = result.stderr.strip()
+
+    except subprocess.CalledProcessError as e:
+        stdout_output = e.stdout.decode() if e.stdout else ""
+        stderr_output = e.stderr.decode() if e.stderr else "Error occurred"
+
+    finally:
+        # Cleanup: Delete temp file
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+    return stdout_output, stderr_output
 
 
-import requests
+# Example usage
+input_data = {"name": "Alice", "age": 25}
+stdout, stderr = run_subprocess(input_data)
 
-payload = {
-    "language": "python",
-    "version": "3.10",
-    "files": [
-        {
-            "name": "numpy_test.py",
-            "content": """import numpy as np
-
-# Generate large random matrices
-np.random.seed(42)
-matrix_a = np.random.randint(1, 100, (300, 300))
-matrix_b = np.random.randint(1, 100, (300, 300))
-
-# Matrix multiplication
-result = np.dot(matrix_a, matrix_b)
-
-# Print shape and first few values
-print("Result shape:", result.shape)
-print("First row:", result[0][:10])"""
-        }
-    ]
-}
-
-response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
-print(response.json())
-
-import requests
-
-payload = {
-    "language": "python",
-    "version": "3.10",
-    "files": [
-        {
-            "name": "pandas_test.py",
-            "content": """import pandas as pd
-import numpy as np
-
-# Simulate a large dataset
-np.random.seed(42)
-data = {
-    'ID': range(1, 10001),
-    'Age': np.random.randint(18, 80, 10000),
-    'Salary': np.random.randint(30000, 150000, 10000),
-    'Department': np.random.choice(['HR', 'Tech', 'Finance', 'Marketing'], 10000)
-}
-
-df = pd.DataFrame(data)
-
-# Data cleaning
-df = df[df['Salary'] > 40000]  # Remove low salaries
-df['Age_Group'] = pd.cut(df['Age'], bins=[18, 30, 50, 80], labels=['Young', 'Mid', 'Senior'])
-
-# Aggregation
-summary = df.groupby('Department')['Salary'].mean()
-
-print("Processed DataFrame:\n", summary)
-"""
-        }
-    ]
-}
-
-response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
-print(response.json())
-
-# import requests
-
-# payload = {
-#     "language": "javascript",
-#     "version": "16.3.0",
-#     "files": [
-#         {
-#             "name": "js_test.js",
-#             "content": """console.time("Performance Test");
-
-# // Generate 1 million random numbers
-# let arr = Array.from({ length: 1_000_000 }, () => Math.floor(Math.random() * 1000000));
-
-# // Sort the array (O(n log n) complexity)
-# arr.sort((a, b) => a - b);
-
-# // Find the median
-# let median = arr.length % 2 === 0 ? (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2 : arr[Math.floor(arr.length / 2)];
-
-# console.timeEnd("Performance Test");
-# console.log("Median Value:", median);
-# """
-#         }
-#     ]
-# }
-
-# response = requests.post("https://emkc.org/api/v2/piston/execute", json=payload)
-# print(response.json())
-
-# import requests
-# response = requests.get("https://emkc.org/api/v2/piston/runtimes")
-# print(response.json())
+print("STDOUT:", stdout)
+print("STDERR:", stderr)
