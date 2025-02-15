@@ -54,9 +54,7 @@ def execute_code(language, code, input_data, expected_output):
     config = LANGUAGE_CONFIG[language]
     filename = config["filename"]
     print(f"input_data{input_data}")
-    input_str = json.dumps(input_data)  # Convert input to JSON string
-    print(f"input_data{input_str}")
-    input_bytes = input_str.encode() 
+    input_bytes = input_data.encode() 
     print(f"input_data{input_bytes}")
 
 
