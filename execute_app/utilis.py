@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 import os
-import pickle
+import json
 LANGUAGE_CONFIG = {
     "python": {"filename": "code.py", "run_command": ["python3", "code.py"]},
     "javascript": {"filename": "code.js", "run_command": ["node", "code.js"]},
@@ -53,8 +53,12 @@ def execute_code(language, code, input_data, expected_output):
 
     config = LANGUAGE_CONFIG[language]
     filename = config["filename"]
-    
-    input_bytes = pickle.dumps(input_data)
+    print(f"input_data{input_data}")
+    input_str = json.dumps(input_data)  # Convert input to JSON string
+    print(f"input_data{input_str}")
+    input_bytes = input_str.encode() 
+    print(f"input_data{input_bytes}")
+
 
     with tempfile.TemporaryDirectory() as tmpdir:
         code_path = os.path.join(tmpdir, filename)
@@ -86,13 +90,21 @@ def execute_code(language, code, input_data, expected_output):
             )
 
             stdout = result.stdout.decode().strip()
+            print(f"stdout{stdout}")
             stderr = result.stderr.decode().strip()
-            status = "Passed" if stdout == expected_output else "Failed"
+            print(f"stderr{stderr}")
+            try:
+                stdout_data = json.loads(stdout)
+                print(f"stdout_data{stdout_data}")
+            except json.JSONDecodeError:
+                stdout_data = stdout  # Fallback to raw output
+            
+            status = "Passed" if stdout_data == expected_output else "Failed"
 
             return {
-                "stdout": stdout,
+                "stdout": stdout_data,
                 "stderr": stderr,
-                "output": stdout,
+                "output": stdout_data,
                 "expected": expected_output,
                 "status": status
             }
