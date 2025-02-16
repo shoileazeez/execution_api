@@ -42,6 +42,11 @@ RUN apt-get update && apt-get install -y \
     erlang \
     elixir \
     bash \
+    lua5.3 \
+    liblua5.3-dev \
+    luarocks \
+    luarocks install lua-cjson \
+
     && rm -rf /var/lib/apt/lists/*
 
 # Install JSON dependencies
@@ -81,17 +86,6 @@ RUN R -e "install.packages('jsonlite', repos='http://cran.r-project.org')"
 RUN cpan JSON
 
 # Lua
-RUN apt-get update && apt-get install -y \
-    lua5.3 \
-    wget \
-    unzip \
-    && wget https://luarocks.github.io/luarocks/releases/luarocks-3.9.2.tar.gz \
-    && tar -xzf luarocks-3.9.2.tar.gz \
-    && cd luarocks-3.9.2 \
-    && ./configure --with-lua-include=/usr/include/lua5.3 \
-    && make \
-    && make install \
-    && luarocks install lua-cjson
 
 
 # Erlang
