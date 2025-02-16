@@ -81,7 +81,18 @@ RUN R -e "install.packages('jsonlite', repos='http://cran.r-project.org')"
 RUN cpan JSON
 
 # Lua
-RUN apt-get install -y luarocks && luarocks install lua-cjson
+RUN apt-get update && apt-get install -y \
+    lua5.3 \
+    wget \
+    unzip \
+    && wget https://luarocks.github.io/luarocks/releases/luarocks-3.9.2.tar.gz \
+    && tar -xzf luarocks-3.9.2.tar.gz \
+    && cd luarocks-3.9.2 \
+    && ./configure --with-lua-include=/usr/include/lua5.3 \
+    && make \
+    && make install \
+    && luarocks install lua-cjson
+
 
 # Erlang
 RUN apt-get install -y erlang-xmerl && git clone https://github.com/talentdeficit/jsx.git && cd jsx && make && make install
