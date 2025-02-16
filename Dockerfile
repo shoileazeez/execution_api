@@ -41,7 +41,6 @@ RUN apt-get update && apt-get install -y \
     lua5.3 \
     liblua5.3-dev \
     luarocks \
-    erlang \
     elixir \
     bash \
     && luarocks install lua-cjson \
@@ -60,6 +59,18 @@ RUN apt-get update && apt-get install -y libjson-c-dev
 
 # Ruby
 RUN gem install json
+
+RUN apt-get update && apt-get install -y \
+    erlang-xmerl \
+    erlang-dev \
+    make \
+    gcc \
+    && git clone https://github.com/talentdeficit/jsx.git \
+    && cd jsx \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf jsx
 
 # Go
 # Set Go environment and install dependencies
@@ -88,7 +99,6 @@ RUN cpan JSON
 
 
 # Erlang
-RUN apt-get install -y erlang-xmerl && git clone https://github.com/talentdeficit/jsx.git && cd jsx && make && make install
 
 # Elixir
 RUN mix local.hex --force && mix local.rebar --force && mix archive.install hex phx_new --force && mix deps.get && mix deps.compile
