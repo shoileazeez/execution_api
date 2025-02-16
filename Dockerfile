@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     curl \
     gnupg \
-    default-jdk \              
-    ruby-full \                
-    g++ \  
+    default-jdk \
+    ruby-full \
+    g++ \
     nodejs \
     npm \
     golang \
@@ -38,15 +38,15 @@ RUN apt-get update && apt-get install -y \
     kotlin \
     r-base \
     perl \
-    lua5.3 \   
-    erlang \
-    elixir \
-    bash \
     lua5.3 \
     liblua5.3-dev \
     luarocks \
-    luarocks install lua-cjson \
+    erlang \
+    elixir \
+    bash \
+    && luarocks install lua-cjson \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Install JSON dependencies
 # JavaScript & TypeScript
