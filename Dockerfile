@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y \
     liblua5.3-dev \
     luarocks \
     elixir \
+    erlang \
     bash \
     && luarocks install lua-cjson \
     && rm -rf /var/lib/apt/lists/*
@@ -59,18 +60,6 @@ RUN apt-get update && apt-get install -y libjson-c-dev
 
 # Ruby
 RUN gem install json
-
-RUN apt-get update && apt-get install -y \
-    erlang-xmerl \
-    erlang-dev \
-    make \
-    gcc \
-    && git clone https://github.com/talentdeficit/jsx.git \
-    && cd jsx \
-    && make \
-    && make install \
-    && cd .. \
-    && rm -rf jsx
 
 # Go
 # Set Go environment and install dependencies
