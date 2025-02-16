@@ -58,8 +58,12 @@ RUN apt-get update && apt-get install -y libjson-c-dev
 RUN gem install json
 
 # Go
+# Set Go environment and install dependencies
 RUN go env -w GO111MODULE=on \
-    && go install github.com/tidwall/gjson@latest
+    && go mod init myproject \
+    && go get github.com/tidwall/gjson \
+    && go mod tidy
+
 
 
 # PHP (Composer & JSON)
