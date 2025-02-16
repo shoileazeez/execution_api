@@ -88,9 +88,7 @@ def execute_code(language, code, input_data, expected_output):
             )
 
             stdout = result.stdout.decode().strip()
-            print(f"stdout{stdout}")
             stderr = result.stderr.decode().strip()
-            print(f"stderr{stderr}")
             try:
                 stdout_data = json.loads(stdout)
                 print(f"stdout_data{stdout_data}")
@@ -104,6 +102,8 @@ def execute_code(language, code, input_data, expected_output):
                 "stderr": stderr,
                 "output": stdout_data,
                 "expected": expected_output,
+                "test_cases_passed": sum(1 for i, j in zip(stdout_data["results"], expected_output["results"]) if i == j),
+                "total_test_cases": len(expected_output["results"])
                 "status": status
             }
 
