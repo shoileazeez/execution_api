@@ -103,7 +103,7 @@ def execute_code(language, code, input_data, expected_output):
                 "output": stdout_data,
                 "expected": expected_output,
                 "test_cases_passed": sum(1 for i, j in zip(stdout_data["results"], expected_output["results"]) if i == j),
-                "total_test_cases": len(expected_output["results"])
+                "total_test_cases": len(expected_output["results"]),
                 "status": status
             }
 
