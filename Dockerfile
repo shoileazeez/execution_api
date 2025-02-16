@@ -88,10 +88,6 @@ RUN cpan JSON
 
 
 # Erlang
-
-# Elixir
-RUN mix local.hex --force && mix local.rebar --force && mix archive.install hex phx_new --force && mix deps.get && mix deps.compile
-
 # Install Yarn (optional, if needed for Node.js projects)
 RUN npm install --global yarn
 
