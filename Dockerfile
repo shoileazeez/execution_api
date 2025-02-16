@@ -58,7 +58,9 @@ RUN apt-get update && apt-get install -y libjson-c-dev
 RUN gem install json
 
 # Go
-RUN go install github.com/tidwall/gjson@latest
+RUN go env -w GO111MODULE=on \
+    && go install github.com/tidwall/gjson@latest
+
 
 # PHP (Composer & JSON)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
