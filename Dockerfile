@@ -46,7 +46,6 @@ RUN apt-get update && apt-get install -y \
     liblua5.3-dev \
     luarocks \
     luarocks install lua-cjson \
-
     && rm -rf /var/lib/apt/lists/*
 
 # Install JSON dependencies
