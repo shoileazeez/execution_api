@@ -70,8 +70,6 @@ RUN go env -w GO111MODULE=on \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer require nesbot/carbon
 
-# Rust
-RUN cargo install serde_json
 
 # Kotlin (JSON parsing)
 RUN mkdir -p /usr/share/kotlin-libs && curl -L https://repo1.maven.org/maven2/org/json/json/20230227/json-20230227.jar -o /usr/share/kotlin-libs/json.jar
