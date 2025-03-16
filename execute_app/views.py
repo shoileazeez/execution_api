@@ -2,26 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .utilis import execute_code, LANGUAGE_CONFIG
-import re
-import json
-
-def is_malicious_code(code):
-    """
-    Check for malicious code patterns (e.g., system calls, file operations).
-    """
-    dangerous_patterns = [
-        r"import os",         # Prevent OS module import
-        r"import sys",        # Prevent system access
-        r"subprocess",        # Prevent command execution
-        r"open\(",            # Prevent file manipulation
-        r"eval\(",            # Prevent arbitrary code execution
-        r"exec\(",            # Prevent arbitrary code execution
-    ]
-    
-    for pattern in dangerous_patterns:
-        if re.search(pattern, code):
-            return True
-    return False
 
 class ExecuteCodeView(APIView):
     def post(self, request):
@@ -35,16 +15,7 @@ class ExecuteCodeView(APIView):
                 {"error": "language, code, and expected output are required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if is_malicious_code(code):
-            return Response({"error": "Potentially malicious code detected!"}, status=400)
 
-#         if isinstance(input_data, dict):
-#             input_data = json.dumps(input_data, indent=4)  # Pretty-print JSON
-#   # Convert dict → JSON string
-#         elif not isinstance(input_data, str):
-#             return Response({"error": "Invalid input format. Must be string or JSON."}, status=400)
-
-        # Execute the code
         result = execute_code(language, code, input_data, expected_output)
         if "error" in result:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
