@@ -113,8 +113,8 @@ def execute_code(language, code, input_data, expected_output):
                 "stderr": stderr,
                 "output": stdout_data,
                 "expected": expected_output,
-                "test_cases_passed": test_cases_passed
-                "total_test_cases": total_test_cases
+                "test_cases_passed": test_cases_passed,
+                "total_test_cases": total_test_cases,
                 "status": status
             }
 
