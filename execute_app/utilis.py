@@ -96,14 +96,25 @@ def execute_code(language, code, input_data, expected_output):
                 stdout_data = stdout  # Fallback to raw output
             
             status = "Passed" if stdout_data == expected_output else "Failed"
+            test_cases_passed = 0
+            total_test_cases = 0
+            if isinstance(stdout_data, dict) and isinstance(expected_output, dict) and "results" in stdout_data and "results" in expected_output:
+                try:
+                    test_cases_passed = sum(1 for i, j in zip(stdout_data["results"], expected_output["results"]) if i == j)
+                    total_test_cases = len(expected_output["results"])
+                except TypeError as e:
+                    print(f"TypeError during test case comparison: {e}")
+            else:
+                print("Warning: stdout_data or expected_output is not a dictionary with 'results' key, test case comparison skipped.")
+
 
             return {
                 "stdout": stdout_data,
                 "stderr": stderr,
                 "output": stdout_data,
                 "expected": expected_output,
-                "test_cases_passed": sum(1 for i, j in zip(stdout_data["results"], expected_output["results"]) if i == j),
-                "total_test_cases": len(expected_output["results"]),
+                "test_cases_passed": test_cases_passed
+                "total_test_cases": total_test_cases
                 "status": status
             }
 
